@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 public class MalClientIDHandler : DelegatingHandler
 {
@@ -22,6 +23,50 @@ public class MalClientIDHandler : DelegatingHandler
     }
 }
 
+
+
+public class MainPicture
+{
+    public string medium { get; set; }
+    public string large { get; set; }
+}
+
+public class Node
+{
+    public int id { get; set; }
+    public string title { get; set; }
+    public MainPicture main_picture { get; set; }
+}
+
+public class NodeWrapper
+{
+    public Node node { get; set; }
+}
+
+public class Data
+{
+    public List<NodeWrapper> data { get; set; }
+}
+
+public class Paging
+{
+    public string next { get; set; }
+}
+
+public class Season
+{
+    public int year { get; set; }
+    public string season { get; set; }
+}
+
+public class BaseResponse
+{
+    public List<NodeWrapper> data { get; set; }
+    public Paging paging { get; set; }
+    public Season season { get; set; }
+}
+
+
 class Program
 {
     static async Task Main(string[] args)
@@ -38,21 +83,48 @@ class Program
 
         // Set query parameters
         const string query = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        var queryParams = $"?q={query}&limit=10"; // Добавьте или удалите другие параметры по мере необходимости
 
-        var response = await httpClient.GetAsync($"anime{queryParams}");
+        const int limit = 5; // Max value is 100
+        int offset = 0;
+        var queryParams = $"/season/2017/summer?limit={limit}&offset={offset}"; // Добавьте или удалите другие параметры по мере необходимости
 
-
-
-        if (response.IsSuccessStatusCode)
+        /*
+        using (var httpClientAnime = new HttpClient(handler))
         {
-            var responseContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(responseContent);
+
+            var apiUrl = "https://api.myanimelist.net/v2/anime" + queryParams;
+
+            var responseAnime = await httpClientAnime.GetAsync(apiUrl);
+
+            if (responseAnime.IsSuccessStatusCode)
+            {
+                var tmp = await responseAnime.Content.ReadAsAsync<AnimeData>();
+                foreach (var item in tmp.Data)
+                {
+                    await Console.Out.WriteLineAsync(item.Id + "\t" + item.Title);
+                }
+            }
         }
-        else
-        {
-            Console.WriteLine($"Error: {response.StatusCode}");
-        }
+        */
+
+        // while (true) // Keep fetching until no more anime are returned
+         //{
+           //  var queryParams = $"/season/2017/summer?limit={limit}&offset={offset}";
+             var response = await httpClient.GetAsync($"anime{queryParams}");
+
+             if (response.IsSuccessStatusCode)
+             {
+                 var responseContent = await response.Content.ReadAsAsync<BaseResponse>();
+                 Console.WriteLine(responseContent);
+
+                 offset += limit; // Move to the next set of anime
+             }
+             else
+             {
+                 Console.WriteLine($"Error: {response.StatusCode}");
+                 //break;
+             }
+         //}
     }
 }
 
