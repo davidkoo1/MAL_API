@@ -1,6 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
 
+
+Console.WriteLine("\t\t!!The data is relevant from 2012 to 12/22/2023!!\n\n");
+
 AnimeList animeList;
 
 if (File.Exists("Anime.json"))
@@ -12,6 +15,8 @@ else
 {
     animeList = new AnimeList();
 }
+
+
 Console.WriteLine("Total anime: " + animeList.Animes.Count());
 
 string answer = "";
